@@ -97,10 +97,15 @@ for repo_file in /etc/yum.repos.d/*epel*.repo; do
 done
 echo -e "${VERDE}✅ Ajuste automático do repositório EPEL concluído.${NC}\n"
 
-# Baixa e instala repositório correto do Zabbix
-echo -e "${BRANCO}📥 Instalando repositório Zabbix 7.2 para ${OS_ID^} 9...${NC}"
-rpm -Uvh https://repo.zabbix.com/zabbix/7.2/release/${ZABBIX_REPO}/9/noarch/zabbix-release-latest-7.2.el9.noarch.rpm
-status
+# Instala o repositório Zabbix 7.2 (somente se ainda não estiver instalado)
+echo -e "${BRANCO}📥 Verificando se o repositório do Zabbix já está instalado...${NC}"
+if rpm -q zabbix-release &>/dev/null; then
+  echo -e "${AZUL_CLARO}✔️ Repositório Zabbix já instalado (${ROXO_CLARO}zabbix-release${AZUL_CLARO})${NC}\n"
+else
+  echo -e "${BRANCO}🔽 Instalando repositório Zabbix 7.2 para ${ZABBIX_REPO}...${NC}"
+  rpm -Uvh https://repo.zabbix.com/zabbix/7.2/release/${ZABBIX_REPO}/9/noarch/zabbix-release-latest-7.2.el9.noarch.rpm
+  status
+fi
 
 dnf clean all
 status
