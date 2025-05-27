@@ -8,17 +8,17 @@ Desenvolvido para profissionais de infraestrutura, DevOps, analistas NOC e entus
 
 📂 Como Utilizar
 
-git clone https://github.com/bug-it/automzg.git
-cd automzg
-chmod +x automzg.sh
-sudo ./automzg.sh
+git clone https://github.com/ivansaboia/autozbgr.git
+cd autozbgr/
+chmod +x autozbgr.sh
+sudo ./autozbgr.sh
 
 
 
 🔧 Requisitos
 
-→ Ubuntu 22.04 ou superior.
-→ Permissões de root (sudo).
+→ RHEL 9, AlmaLinux 9, Rocky Linux 9, Oracle Linux 9.
+→ Permissões de root (sudo) ou ROOT.
 → Conexão com a internet.
 
 
