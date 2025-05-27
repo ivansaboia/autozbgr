@@ -2,7 +2,7 @@
 
 # Configurações iniciais
 LOG_FILE="/var/log/zabbix_install_$(date +%Y%m%d_%H%M%S).log"
-VERSION="1.0"
+VERSION="1.2"
 AUTHOR="Ivan Saboia"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
@@ -17,9 +17,9 @@ NC='\033[0m' # No Color
 log() {
     local log_type=$1
     local message=$2
-
+    
     echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] [$log_type] $message" | tee -a "$LOG_FILE"
-
+    
     if [ "$log_type" == "ERROR" ]; then
         echo -e "${RED}❌ ERRO: $message${NC}" >&2
     elif [ "$log_type" == "WARNING" ]; then
@@ -32,10 +32,10 @@ check_error() {
     local exit_code=$1
     local error_message=$2
     local critical=$3
-
+    
     if [ $exit_code -ne 0 ]; then
         log "ERROR" "$error_message"
-
+        
         if [ "$critical" == "true" ]; then
             log "ERROR" "Falha crítica detectada. Abortando instalação."
             echo -e "\n${RED}=== DETALHES DO ERRO ==="
@@ -46,6 +46,34 @@ check_error() {
         return 1
     fi
     return 0
+}
+
+# Função para configurar automaticamente o EPEL
+configure_epel() {
+    local modified=0
+    
+    for repo_file in /etc/yum.repos.d/*epel*.repo; do
+        if [ -f "$repo_file" ]; then
+            log "INFO" "Verificando arquivo EPEL: $repo_file"
+            
+            if grep -q "^\[epel\]" "$repo_file"; then
+                if ! grep -q "excludepkgs=zabbix\*" "$repo_file"; then
+                    log "INFO" "Adicionando excludepkgs=zabbix* ao arquivo $repo_file"
+                    sed -i '/^\[epel\]/a excludepkgs=zabbix*' "$repo_file"
+                    modified=1
+                else
+                    log "INFO" "A diretiva excludepkgs=zabbix* já existe em $repo_file"
+                fi
+            else
+                log "WARNING" "Seção [epel] não encontrada em $repo_file"
+            fi
+        fi
+    done
+    
+    if [ $modified -eq 1 ]; then
+        log "INFO" "Configuração EPEL atualizada. Limpando cache DNF..."
+        dnf clean all >> "$LOG_FILE" 2>&1
+    fi
 }
 
 # Cabeçalho do script
@@ -72,10 +100,8 @@ cat << "EOF"
 ╚███╔███╔╝██║   ██║   ██║  ██║    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║██║ ╚████║██║  ██║   
  ╚══╝╚══╝ ╚═╝   ╚═╝   ╚═╝  ╚═╝     ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   
 EOF
-echo
-echo
 echo -e "${NC}"
-echo -e "${YELLOW}ZABBIX SERVER AUTO INSTALL with Detailed Logging"
+echo -e "${YELLOW}ZABBIX SERVER AUTO INSTALL with Automatic EPEL Configuration"
 echo -e "Versão: $VERSION"
 echo -e "Autor: $AUTHOR${NC}"
 echo -e "Log file: $LOG_FILE"
@@ -95,6 +121,10 @@ OS_VERSION=$(grep '^VERSION_ID=' /etc/os-release | cut -d '=' -f2 | tr -d '"')
 if [[ "$OS_NAME" != "Fedora Linux" ]]; then
     check_error 1 "Sistema operacional não suportado: $OS_NAME" true
 fi
+
+# Configurar automaticamente o EPEL
+log "INFO" "Verificando e configurando repositórios EPEL..."
+configure_epel
 
 # Iniciar instalação
 log "INFO" "Iniciando processo de instalação no $OS_NAME $OS_VERSION"
