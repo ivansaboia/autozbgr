@@ -68,7 +68,6 @@ echo -e "${AMARELO}/etc/yum.repos.d/epel.repo${NC}"
 echo -e "${BRANCO}E adicionar a seguinte linha dentro da seção [epel]:${NC}"
 echo -e "${AZUL_CLARO}excludepkgs=zabbix*${NC}\n"
 echo -e "${BRANCO}🔧 Verificando repositórios EPEL e aplicando excludepkgs=zabbix*...${NC}"
-
 for repo_file in /etc/yum.repos.d/*epel*.repo; do
     if [ -f "$repo_file" ]; then
         if ! grep -q "^excludepkgs=zabbix\*" "$repo_file"; then
@@ -79,9 +78,7 @@ for repo_file in /etc/yum.repos.d/*epel*.repo; do
         fi
     fi
 done
-
 echo -e "${VERDE}✅ Ajuste automático do repositório EPEL concluído.${NC}\n"
-
 
 # Baixa e instala repositório correto do Zabbix
 echo -e "${BRANCO}📥 Instalando repositório Zabbix 7.2 para ${OS_ID^} 9...${NC}"
