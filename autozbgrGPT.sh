@@ -1,5 +1,22 @@
 #!/bin/bash
 
+install_if_needed() {
+  for pkg in "$@"; do
+    if dnf list installed "$pkg" &>/dev/null; then
+      echo -e "${AZUL_CLARO}✔️ Pacote já instalado: ${pkg}${NC}"
+    else
+      echo -e "${BRANCO}📦 Instalando pacote: ${AMARELO}${pkg}${NC}"
+      dnf install -y "$pkg"
+      if [ $? -eq 0 ]; then
+        echo -e "${VERDE}✅ Instalação de ${pkg} concluída${NC}"
+      else
+        echo -e "${VERMELHO}❌ Falha na instalação de ${pkg}, mas continuando...${NC}"
+      fi
+    fi
+  done
+  echo
+}
+
 # Cores
 AMARELO="\e[33m"; VERMELHO="\e[31m"; VERDE="\e[32m"; VERDE_LIMAO="\e[92m"
 AZUL_CLARO="\e[96m"; ROXO_CLARO="\e[95m"; BRANCO="\e[97m"; NC="\033[0m"
@@ -90,13 +107,21 @@ status
 
 # Instala pacotes principais
 echo -e "${BRANCO}📦 Instalando Zabbix, MariaDB, PHP-FPM, Nginx...${NC}"
-dnf install -y zabbix-server-mysql zabbix-web-mysql zabbix-apache-conf zabbix-sql-scripts zabbix-selinux-policy zabbix-agent mariadb-server nginx php-fpm php-mysqlnd
+install_if_needed mariadb-server nginx php-fpm php-mysqlnd
 status
+
+install_if_needed zabbix-server-mysql zabbix-web-mysql zabbix-apache-conf zabbix-sql-scripts zabbix-selinux-policy zabbix-agent
+status
+
 
 # Instala Grafana
 echo -e "${BRANCO}📦 Instalando Grafana...${NC}"
-dnf install -y https://dl.grafana.com/oss/release/grafana-10.2.2-1.x86_64.rpm
-status
+if ! dnf list installed grafana &>/dev/null; then
+  dnf install -y https://dl.grafana.com/oss/release/grafana-10.2.2-1.x86_64.rpm
+  status
+else
+  echo -e "${AZUL_CLARO}✔️ Grafana já instalado${NC}"
+fi
 
 echo -e "${BRANCO}🚀 Ativando serviços...${NC}"
 systemctl enable --now mariadb zabbix-server zabbix-agent nginx php-fpm grafana-server
