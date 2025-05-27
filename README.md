@@ -45,4 +45,4 @@ sudo ./autozbgr.sh
 
 🧑‍💻 Profissionais apaixonados por automação, monitoramento e infraestrutura inteligente.
 
-🪲 Desenvolvido por BUG IT
+🪲 Desenvolvido por Ivan Saboia
